@@ -45,6 +45,14 @@ export class userService {
         }
     }
 
+    public static async getAllExercises(iduser: number): Promise<Exercise[]> {
+        try {
+            return await UserRepository.findAllExercises(iduser);
+        } catch (error: any) {
+            throw new Error(`Error al obtener ejercicios: ${error.message}`);
+        }
+    }
+
     public static async getUserById(iduser: number): Promise<User | null> {
         try {
             return await UserRepository.findById(iduser);

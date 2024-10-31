@@ -61,6 +61,15 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
+export const getExercises = async (req: Request, res: Response) => {
+  try {
+    const exercises = await userService.getAllExercises(parseInt(req.params.iduser, 10));
+    res.status(201).json(exercises);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const updatedUser = await userService.modifyUser(parseInt(req.params.employee_id, 10), req.body);

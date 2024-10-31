@@ -79,6 +79,19 @@ export class UserRepository {
     });
   }
 
+  public static async findAllExercises(iduser: number): Promise<Exercise[]> {
+    const query = 'SELECT * FROM user_exercise WHERE user = ?';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [iduser], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results as Exercise[]);
+        }
+      });
+    });
+  }
+
   public static async updateUser(iduser: number, userData: User): Promise<User | null> {
     const query = 'UPDATE user SET mail = ?, password = ?, height = ?, weight = ?, sex = ? WHERE iduser = ?';
     return new Promise((resolve, reject) => {
