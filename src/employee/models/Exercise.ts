@@ -3,3 +3,9 @@ export interface Exercise {
     user: number;
     exercise: string;
 } 
+
+export interface MyList {
+    idmylist?: number;
+    user: number;
+    exercise: string;
+} 

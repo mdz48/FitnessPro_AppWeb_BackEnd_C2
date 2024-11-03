@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { userService } from '../services/userService';
 import { User } from '../models/User';
+import { Exercise } from '../models/Exercise';
 
 export const loginUser= async (req: Request, res: Response) => {
   const { mail, password } = req.body;
@@ -61,6 +62,37 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyList = async (req: Request, res: Response) => {
+  try {
+    const mylist = await userService.getMyList(parseInt(req.params.iduser, 10));
+    res.status(201).json(mylist);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const addMyList = async (req: Request, res: Response) => {
+  try {
+    const { relation } = req.body;
+    const iduser = await userService.getUserById(parseInt(req.params.iduser, 10));
+    if(iduser){
+      const exercise = await userService.getByFavorite(iduser.iduser, relation);
+      if(exercise){
+        res.status(409).json({ message: 'El ejercicio ya está en la lista' });
+      }else{
+        const newMyList = await userService.addMyList(iduser.iduser, relation);
+        res.status(201).json(newMyList);
+      }
+    }else{
+      res.status(404).json({ message: 'No se encontró el usuario' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 export const getExercises = async (req: Request, res: Response) => {
   try {
     const exercises = await userService.getAllExercises(parseInt(req.params.iduser, 10));
@@ -81,6 +113,27 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+
+};
+
+export const updateExercise = async (req: Request, res: Response) => {
+  try {
+    const { relation } = req.body;
+    console.log(relation);
+    const iduser = await userService.getUserById(parseInt(req.params.iduser, 10));
+    if(iduser){
+      const exercises: Array<Exercise> = await userService.getAllExercises(iduser.iduser);
+      await userService.deleteExercise(iduser.iduser, exercises.map(exercise => exercise.exercise));  
+      const relationUpdated = await userService.addExcercise(relation, iduser.iduser);
+      if(relationUpdated){
+        res.status(201).json(relationUpdated);
+      }
+    }else{
+      res.status(404).json({ message: 'No se encontró el usuario' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
 };
 
 export const deleteUser = async (req: Request, res: Response) => {
@@ -94,4 +147,17 @@ export const deleteUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
+};
+
+export const deleteFromMyList = async (req: Request, res: Response) => {
+  try {
+    const deleted = await userService.deleteFromMyList(req.params.idexercise, parseInt(req.params.iduser, 10));
+    if(deleted){
+      res.status(201).json({ message: 'Se eliminó el ejercicio.' });
+    }else{
+      res.status(404).json({ message: 'No se encontró el ejercicio' });
+    }
+} catch (error: any) {
+  res.status(500).json({ error: error.message });
+}
 };

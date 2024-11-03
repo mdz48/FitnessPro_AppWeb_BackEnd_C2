@@ -1,7 +1,7 @@
 import { ResultSetHeader } from 'mysql2';
 import connection from '../../shared/config/database';
 import { User } from '../models/User';
-import { Exercise } from '../models/Exercise';
+import { Exercise, MyList } from '../models/Exercise';
 
 export class UserRepository {
 
@@ -110,6 +110,52 @@ export class UserRepository {
     });
   }
 
+  public static async getByFavorite(iduser: number, exercise: string): Promise<MyList | null> {
+    const query = 'SELECT * FROM mylist WHERE user = ? AND exercise = ?';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [iduser, exercise], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          const mylist: MyList[] = results as MyList[];
+          if(mylist.length > 0){
+            resolve(mylist[0]);
+          }else{
+            resolve(null);
+          }
+        }
+      });
+    });
+  }
+
+  public static async createMyList(iduser: number, exercise: Exercise): Promise<MyList> {
+    const query = 'INSERT INTO mylist (user, exercise) VALUES (?, ?)';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [iduser, exercise], (error, result: ResultSetHeader) => {
+        if (error) {
+          reject(error);
+        } else {
+          const createdExerciseId = result.insertId;
+          const createdExercise: MyList = { ...exercise, idmylist: createdExerciseId };
+          resolve(createdExercise);
+        }
+      });
+    });
+  }
+
+  public static async findAllMyList(iduser: number): Promise<MyList[]> {
+    const query = 'SELECT * FROM mylist WHERE user = ?';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [iduser], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results as MyList[]);
+        }
+      });
+    });
+  }
+
   public static async deleteUser(iduser: number): Promise<boolean> {
     const query = 'DELETE FROM user WHERE iduser = ?';
     return new Promise((resolve, reject) => {
@@ -127,4 +173,29 @@ export class UserRepository {
     });
   }
 
+  public static async deleteExercise(iduser_exercise: string, iduser: number): Promise<boolean> {
+    const query = 'DELETE FROM user_exercise WHERE exercise = ? AND user = ?';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [iduser_exercise, iduser], (error, result: ResultSetHeader) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result.affectedRows > 0);
+        }
+      });
+    });
+  }
+
+  public static async deleteFromMyList(exercise: string, iduser: number): Promise<boolean> {
+    const query = 'DELETE FROM mylist WHERE exercise = ? AND user = ?';
+    return new Promise((resolve, reject) => {
+      connection.execute(query, [exercise, iduser], (error, result: ResultSetHeader) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result.affectedRows > 0);
+        }
+      });
+    });
+  }
 }
