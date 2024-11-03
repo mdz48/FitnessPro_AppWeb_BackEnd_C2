@@ -46,6 +46,17 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserByMail = async (req: Request, res: Response) => {
+  try {
+    console.log(req.params.mail);
+    
+    const user = await userService.getUserByMail(req.params.mail);
+    res.status(201).json(user);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createUser = async (req: Request, res: Response) => {
   try {
     const { relation } = req.body;
